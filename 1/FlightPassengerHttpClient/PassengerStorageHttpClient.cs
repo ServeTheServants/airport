@@ -12,14 +12,14 @@ namespace FlightPassengerHttpClient
 
         public PassengerStorageHttpClient(HttpClient httpClient)
         {
-            httpClient.BaseAddress = new Uri("http://localhost:44363/");
+            httpClient.BaseAddress = new Uri("http://localhost:4567/");
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             Client = httpClient;
         }
         public bool AddToPassengerStorage(Guid id)
         {
             var stringContent = new StringContent(JsonConvert.SerializeObject(id), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = Client.PostAsync("api/values/3", stringContent).Result;
+            HttpResponseMessage response = Client.PostAsync("passenger/" + id, stringContent).Result;
             if (response.IsSuccessStatusCode)
                 return true;
             else
@@ -28,7 +28,7 @@ namespace FlightPassengerHttpClient
         public bool AddToLandPassengerStorage(Guid id)
         {
             var stringContent = new StringContent(JsonConvert.SerializeObject(id), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = Client.PostAsync("api/values/3", stringContent).Result;
+            HttpResponseMessage response = Client.PostAsync("passenger/" + id, stringContent).Result;
             if (response.IsSuccessStatusCode)
                 return true;
             else

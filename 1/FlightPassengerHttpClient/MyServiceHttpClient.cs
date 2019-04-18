@@ -28,7 +28,7 @@ namespace FlightPassengerHttpClient
         public bool DeleteArrivedFlightPassenger(Guid id)
         {
             var stringContent = new StringContent(JsonConvert.SerializeObject(id), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = Client.DeleteAsync("api/values/deletearrived/" + id).Result;
+            HttpResponseMessage response = Client.DeleteAsync("api/flightpassengers/deletearrived/" + id).Result;
             if (response.IsSuccessStatusCode)
                 return true;
             else

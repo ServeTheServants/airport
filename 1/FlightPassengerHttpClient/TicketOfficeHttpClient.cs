@@ -12,21 +12,18 @@ namespace FlightPassengerHttpClient
 
         public TicketOfficeHttpClient(HttpClient httpClient)
         {
-            httpClient.BaseAddress = new Uri("http://localhost:4436/");
+            httpClient.BaseAddress = new Uri("http://localhost:7016/");
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             Client = httpClient;
         }
-        public Ticket BuyTicket(FlightPassenger flightPassenger, Flight flight)
+        public string BuyTicket(FlightPassenger flightPassenger, Flight flight)
         {
-            var fpFlight = (FlightPassenger: flightPassenger, Flight: flight);
-            var stringContent = new StringContent(JsonConvert.SerializeObject(fpFlight), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = Client.PostAsync("api/values/3", stringContent).Result;
+            HttpResponseMessage response = Client.GetAsync("buy/" + JsonConvert.SerializeObject(flightPassenger) + "/" + JsonConvert.SerializeObject(flight)).Result;
             if (response.IsSuccessStatusCode)
             {
                 HttpContent responseContent = response.Content;
                 var json = responseContent.ReadAsStringAsync().Result;
-                var ticket = JsonConvert.DeserializeObject<Ticket>(json);
-                return ticket;
+                return json;
             }
             else
                 return null;

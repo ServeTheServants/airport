@@ -21,14 +21,14 @@ namespace FlightPassengerHttpClient
 
         public BoardHttpClient(HttpClient httpClient)
         {
-            httpClient.BaseAddress = new Uri("http://localhost:44367/");
+            httpClient.BaseAddress = new Uri("http://localhost:7015/");
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             Client = httpClient;
         }
 
         public List<Flight> GetFlights()
         {
-            HttpResponseMessage response = Client.GetAsync("api/flightpassengers").Result;
+            HttpResponseMessage response = Client.GetAsync("api/board/getflights").Result;
             if (response.IsSuccessStatusCode)
             {
                 HttpContent responseContent = response.Content;
@@ -41,11 +41,9 @@ namespace FlightPassengerHttpClient
         }
         public int GetRegistrationStatus(int flightId)
         {
-            var stringContent = new StringContent(JsonConvert.SerializeObject(flightId), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = Client.GetAsync("api/scoreboard/flights/" + flightId).Result;
+            HttpResponseMessage response = Client.GetAsync("api/board/sendstatus/" + flightId).Result;
             if (response.IsSuccessStatusCode)
             {
-
                 HttpContent responseContent = response.Content;
                 var json = responseContent.ReadAsStringAsync().Result;
                 var rs = JsonConvert.DeserializeObject<int>(json);

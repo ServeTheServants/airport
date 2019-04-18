@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FlightPassengerHttpClient;
 using Bogus;
+using System;
 
 namespace FlightPassengerApi
 {
@@ -10,6 +11,8 @@ namespace FlightPassengerApi
     { 
         //private System.Timers.Timer _timer = new System.Timers.Timer();
         private readonly DataBase _db;
+        private readonly Random random = new Random();
+        private static readonly object obj = new object();
         public FlightPassengerGeneratorHostedService(DataBase db)
         {
             _db = db;
@@ -30,12 +33,16 @@ namespace FlightPassengerApi
                 .RuleFor(x => x.TypeOfFood, f => f.Random.Enum<TypeOfFood>());
             /*
             _timer.Elapsed += delegate {
+                int rnd;
+                lock (obj)
+                    rnd = random.Next(1, 5);
+                _timer.Interval = rnd;
                 var flightPassenger = generator.Generate();
                 flightPassenger.Start();
             };
-            _timer.Interval = 5000;
             _timer.Start();
             */
+            
             while (!stoppingToken.IsCancellationRequested)
             {
                 _ = Task.Run(() =>
@@ -44,8 +51,12 @@ namespace FlightPassengerApi
                     _db.flightPassengers.Add(flightPassenger);
                     flightPassenger.Start();
                 });
-                await Task.Delay(5000);
-            } 
+                int rnd;
+                lock (obj)
+                    rnd = random.Next(1000, 5000);
+                await Task.Delay(rnd);
+            }
+            
         }
         public override Task StopAsync(CancellationToken cancellationToken)
         {

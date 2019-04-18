@@ -12,14 +12,14 @@ namespace FlightPassengerHttpClient
 
         public AirplaneHttpClient(HttpClient httpClient)
         {
-            httpClient.BaseAddress = new Uri("http://localhost:44367/");
+            httpClient.BaseAddress = new Uri("http://localhost:7014/");
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             Client = httpClient;
         }
         public bool EnterTheAirplane(FlightPassenger flightPassenger)
         {
             var stringContent = new StringContent(JsonConvert.SerializeObject(flightPassenger), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = Client.PostAsync("api/values/3", stringContent).Result;
+            HttpResponseMessage response = Client.PostAsync("planes/add_passenger/" + flightPassenger.Ticket.fID, stringContent).Result;
             if (response.IsSuccessStatusCode)
                 return true;
             else

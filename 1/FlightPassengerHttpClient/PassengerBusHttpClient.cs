@@ -12,7 +12,7 @@ namespace FlightPassengerHttpClient
 
         public PassengerBusHttpClient(HttpClient httpClient)
         {
-            httpClient.BaseAddress = new Uri("http://localhost:44367/");
+            httpClient.BaseAddress = new Uri("http://localhost:7002/");
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             Client = httpClient;
         }
@@ -20,7 +20,7 @@ namespace FlightPassengerHttpClient
         {
             var pasbus = (PassengerId: passengerId, BusId: busId);
             var stringContent = new StringContent(JsonConvert.SerializeObject(pasbus), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = Client.PostAsync("api/values/3", stringContent).Result;
+            HttpResponseMessage response = Client.PostAsync("bus/setpassenger", stringContent).Result;
             if (response.IsSuccessStatusCode)
                 return true;
             else
@@ -30,7 +30,7 @@ namespace FlightPassengerHttpClient
         {
             var pasbus = (PassengerId: passengerId, BusId: busId);
             var stringContent = new StringContent(JsonConvert.SerializeObject(pasbus), Encoding.UTF8, "application/json");
-            HttpResponseMessage response = Client.PostAsync("api/values/3", stringContent).Result;
+            HttpResponseMessage response = Client.PostAsync("bus/setpassenger", stringContent).Result;
             if (response.IsSuccessStatusCode)
                 return true;
             else

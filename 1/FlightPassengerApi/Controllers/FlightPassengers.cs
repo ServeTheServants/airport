@@ -55,7 +55,7 @@ namespace FlightPassengerApi.Controllers
             return NoContent();
         }
         [HttpPost]
-        public ActionResult<List<FlightPassenger>> GenerateFlightPassengersInAirplane([FromBody] (Flight flight, int numofpassnegers) flightNum)
+        public ActionResult<List<FlightPassenger>> GenerateFlightPassengersInAirplane([FromBody] (Flight flight, int numberOfAirplanePassnegers) flightNum)
         {
             var fakePassports = new Faker<Passport>()
                 .StrictMode(true)
@@ -70,7 +70,7 @@ namespace FlightPassengerApi.Controllers
                 .RuleFor(x => x.BaggageWeight, f => f.Random.UInt(0, 100))
                 .RuleFor(x => x.TypeOfFood, f => f.Random.Enum<TypeOfFood>());
             var airplanePassengers = new List<FlightPassenger>();
-            for (int i = 0; i < flightNum.numofpassnegers; i++)
+            for (int i = 0; i < flightNum.numberOfAirplanePassnegers; i++)
             {
                 var flightPassenger = generator.Generate();
                 Ticket ticket = new Ticket(Guid.NewGuid(), flightPassenger.Passport.Guid, flightNum.flight.reisNumber, flightNum.flight.to, flightPassenger.Passport.GivenNames, flightPassenger.Passport.Surname, flightPassenger.Passport.Sex);

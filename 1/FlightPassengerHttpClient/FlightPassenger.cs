@@ -23,6 +23,8 @@ namespace FlightPassengerHttpClient
             BaggageWeight = baggageWeight;
             TypeOfFood = typeOfFood;
         }
+        private static readonly Random random = new Random();
+        private static readonly object obj = new object();
         private Fsm fsm = new Fsm();
         private static readonly BoardHttpClient boardHttpClient = new BoardHttpClient(new HttpClient());
         private static readonly TicketOfficeHttpClient ticketOfficeHttpClient = new TicketOfficeHttpClient(new HttpClient());
@@ -68,7 +70,10 @@ namespace FlightPassengerHttpClient
         }
         private void GetFlights()
         {
-            Thread.Sleep(5000);
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             Console.WriteLine("{0} trying to get races", Passport.Surname);
             try
             {
@@ -98,19 +103,44 @@ namespace FlightPassengerHttpClient
         }
         private void BuyTicket()
         {
-            Thread.Sleep(5000);
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             Console.WriteLine("{0} trying to buy ticket", Passport.Surname);
             try
             {
                 Random random = new Random();
                 var flightIndex = random.Next(Flights.Count);
                 var flight = Flights[flightIndex];
-                var ticket = ticketOfficeHttpClient.BuyTicket(this, flight);
-                if (ticket != null)
+                var json = ticketOfficeHttpClient.BuyTicket(this, flight);
+                if (json != null)
                 {
-                    Ticket = ticket;
-                    fsm.SetState(WaitRegistrationStart);
-                    fsm.Update();
+                    if (json == "2") //passenger with this id has already buy a ticket
+                    {
+                        Console.WriteLine("{0} passenger with this id has already buy a ticket", Passport.Surname);
+                        DeleteFlightPassengerFromDBInError(Passport.Guid);
+                    }
+                    else if (json == "3") //there are no more tickets for this flight
+                    {
+                        Console.WriteLine("{0} there are no more tickets for this flight", Passport.Surname);
+                        DeleteFlightPassengerFromDBInError(Passport.Guid);
+                    }
+                    else if (json == "4") //flight registration
+                    {
+                        Console.WriteLine("{0} flight registration ended", Passport.Surname);
+                        DeleteFlightPassengerFromDBInError(Passport.Guid);
+                    }
+                    else if (json == "1") //flight to this city doesn't exist or plain has already landed or there is no plain for this flight - can not buy a ticket
+                    {
+                        Console.WriteLine("{0} flight to this city doesn't exist or plain has already landed or there is no plain for this flight - can not buy a ticket", Passport.Surname);
+                        DeleteFlightPassengerFromDBInError(Passport.Guid);
+                    }
+                    else
+                    {
+                        var ticket = JsonConvert.DeserializeObject<Ticket>(json);
+                        Ticket = ticket;
+                    }
                 }
                 else
                 {
@@ -120,7 +150,7 @@ namespace FlightPassengerHttpClient
             }
             catch (JsonException je)
             {
-                Console.WriteLine("{0} BuyTicket can't desir json {1}", Passport.Surname, je.Message);
+                Console.WriteLine("{0} BuyTicket Can't Desir Json {1}", Passport.Surname, je.Message);
                 DeleteFlightPassengerFromDBInError(Passport.Guid);
             }
             catch (AggregateException ae)
@@ -152,7 +182,10 @@ namespace FlightPassengerHttpClient
             t.Start();
             */
             //await Task.Delay(10000);
-            Thread.Sleep(10000);
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             Console.WriteLine("{0} Waiting Registration", Passport.Surname);
             try
             {
@@ -199,18 +232,32 @@ namespace FlightPassengerHttpClient
 
         private void Registration()
         {
-            Thread.Sleep(5000);
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             Console.WriteLine("{0} trying to Register", Passport.Surname);
             try
             {
-                if (registrationServiceHttpClient.Register(this))
+                var rsa = registrationServiceHttpClient.Register(this);
+                if (rsa == RegistrationServiceAnswer.Registered)
                 {
                     fsm.SetState(EnterThePassengerStorage);
                     fsm.Update();
                 }
-                else
+                else if (rsa == RegistrationServiceAnswer.TicketNotFound)
                 {
-                    Console.WriteLine("{0} Error RegistrationService", Passport.Surname);
+                    Console.WriteLine("{0} Ticket Not Found", Passport.Surname);
+                    DeleteFlightPassengerFromDBInError(Passport.Guid);
+                }
+                else if (rsa == RegistrationServiceAnswer.BaggageOverweight)
+                {
+                    Console.WriteLine("{0} Baggage OverWeight", Passport.Surname);
+                    DeleteFlightPassengerFromDBInError(Passport.Guid);
+                }
+                else if (rsa == 0)
+                {
+                    Console.WriteLine("{0} Registraion Service Another Error Status Code", Passport.Surname);
                     DeleteFlightPassengerFromDBInError(Passport.Guid);
                 }
             }
@@ -222,6 +269,10 @@ namespace FlightPassengerHttpClient
         }
         private void EnterThePassengerStorage()
         {
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             Console.WriteLine("{0} trying to Add to Passenger Storage", Passport.Surname);
             try
             {
@@ -266,8 +317,11 @@ namespace FlightPassengerHttpClient
         }
         private void EnterTheBus()
         {
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             Console.WriteLine("{0} Going To The Bus", Passport.Surname);
-            Thread.Sleep(5000);
             try
             {
                 if (!passengerBusHttpClient.EnterTheBus(Passport.Guid, BusId))
@@ -311,7 +365,10 @@ namespace FlightPassengerHttpClient
         private void EnterTheAirplane()
         {
             Console.WriteLine("{0} Going To The Airplane", Passport.Surname);
-            Thread.Sleep(5000);
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             try
             {
                 if (!airplaneHttpClient.EnterTheAirplane(this))
@@ -427,8 +484,11 @@ namespace FlightPassengerHttpClient
         }
         private void EnterTheLandBus()
         {
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             Console.WriteLine("{0} Going To The Land Bus, Flight GUID: {1}", Passport.Surname, Ticket.fID);
-            Thread.Sleep(5000);
             try
             {
                 if (!passengerBusHttpClient.EnterTheLandBus(Passport.Guid, BusId))
@@ -470,8 +530,11 @@ namespace FlightPassengerHttpClient
         }
         private void EnterTheLandPassengerStorage()
         {
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             Console.WriteLine("{0} trying to Add to Land Passenger Storage, Flight GUID: {1}", Passport.Surname, Ticket.fID);
-            Thread.Sleep(5000);
             try
             {
                 if (passengerStorageHttpClient.AddToLandPassengerStorage(Passport.Guid))
@@ -493,8 +556,11 @@ namespace FlightPassengerHttpClient
         }
         private void LeaveLandPassengerStorage()
         {
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             Console.WriteLine("{0} Trying Go Home from Land Passenger Storage", Passport.Surname);
-            Thread.Sleep(10000);
             try
             {
                 if (!myServiceHttpClient.DeleteArrivedFlightPassenger(Passport.Guid))
@@ -520,7 +586,10 @@ namespace FlightPassengerHttpClient
         }
         private void DeleteFlightPassengerFromLandDBInError(Guid fpGuid)
         {
-            Thread.Sleep(10000);
+            int rnd;
+            lock (obj)
+                rnd = random.Next(3000, 6000);
+            Thread.Sleep(rnd);
             try
             {
                 if (!myServiceHttpClient.DeleteArrivedFlightPassenger(Passport.Guid))
